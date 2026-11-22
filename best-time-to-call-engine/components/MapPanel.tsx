@@ -23,6 +23,7 @@ type PathWithCentroid = {
 type Props = {
   data?: Record<string, StateInfo> | null;
   hourLabel?: string;
+  leadsByState?: Record<string, number>;
 };
 
 const AVAILABLE_COLOR = "#15966b";
@@ -43,20 +44,32 @@ function fillFor(info?: StateInfo | null) {
   return info?.eligible ? AVAILABLE_COLOR : UNAVAILABLE_COLOR;
 }
 
-export default function MapPanel({ data, hourLabel = "" }: Props) {
+export default function MapPanel({
+  data,
+  hourLabel = "",
+  leadsByState,
+}: Props) {
   const safe = useMemo(() => data ?? {}, [data]);
   const detailsRef = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const [pinned, setPinned] = useState<string | null>(null);
 
   const active = hovered ?? pinned;
-  const info = active ? safe[active] : undefined;
+  const info = pinned ? safe[pinned] : undefined;
 
   const availableCount = Object.values(safe).filter(
     (state) => state.eligible,
   ).length;
 
   const totalCount = Object.keys(safe).length;
+
+  const leads = leadsByState ?? {};
+  const totalLeads = Object.values(leads).reduce((sum, n) => sum + n, 0);
+  // leads sitting in states you can call at the selected hour
+  const callableLeads = Object.entries(leads).reduce(
+    (sum, [code, n]) => sum + (safe[code]?.eligible ? n : 0),
+    0,
+  );
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -89,6 +102,16 @@ export default function MapPanel({ data, hourLabel = "" }: Props) {
             </p>
             <p className="text-xs font-medium text-slate-500">
               Unavailable states
+            </p>
+          </div>
+          <div className="rounded-xl bg-indigo-50 px-4 py-3">
+            <p className="text-2xl font-bold text-indigo-700 tabular-nums">
+              {totalLeads > 0 ? callableLeads : "-"}
+            </p>
+            <p className="text-xs font-medium text-indigo-800">
+              {totalLeads > 0
+                ? `Leads you can call (of ${totalLeads})`
+                : "Import numbers to see leads"}
             </p>
           </div>
         </div>
@@ -150,27 +173,29 @@ export default function MapPanel({ data, hourLabel = "" }: Props) {
                   if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
 
                   const info = safe[code];
-                  const showPct = info?.eligible;
+                  const eligible = info?.eligible;
+                  const n = leads[code] ?? 0;
+                  const showLeads = eligible && n > 0;
 
                   return (
                     <g
                       key={`label-${geo.rsmKey}`}
                       textAnchor="middle"
-                      fill={showPct ? "#ffffff" : "#475569"}
+                      fill={eligible ? "#ffffff" : "#475569"}
                       style={{ pointerEvents: "none" }}
                     >
                       <text
                         x={x}
-                        y={showPct ? y - 3 : y}
+                        y={showLeads ? y - 3 : y}
                         dy="0.35em"
                         fontSize={11}
                         fontWeight={700}
                       >
                         {code}
                       </text>
-                      {showPct && (
+                      {showLeads && (
                         <text x={x} y={y + 9} dy="0.35em" fontSize={9}>
-                          {Math.round(info.score * 100)}%
+                          {n}
                         </text>
                       )}
                     </g>
@@ -224,7 +249,7 @@ export default function MapPanel({ data, hourLabel = "" }: Props) {
             )}
           </div>
           {info ? (
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <div>
                 <p className="text-xs text-slate-500">Local time</p>
                 <p className="mt-1 text-sm font-semibold text-slate-800">
@@ -243,6 +268,12 @@ export default function MapPanel({ data, hourLabel = "" }: Props) {
                 <p className="text-xs text-slate-500">Opportunity score</p>
                 <p className="mt-1 text-sm font-semibold text-slate-800">
                   {info.eligible ? `${Math.round(info.score * 100)}%` : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Leads</p>
+                <p className="mt-1 text-sm font-semibold text-slate-800">
+                  {leads[pinned] ?? 0}
                 </p>
               </div>
             </div>

@@ -18,3 +18,18 @@ export async function saveContacts(
   );
   return res.rowCount ?? 0;
 }
+
+// How many leads this workspace has in each state: { CA: 12, NY: 5, ... }
+export async function countLeadsByState(workspaceId: string) {
+  const res = await pool.query<{ state: string; n: number }>(
+    `select state, count(*)::int as n
+     from contacts
+     where workspace_id = $1 and state is not null
+     group by state`,
+    [workspaceId],
+  );
+  return Object.fromEntries(res.rows.map((r) => [r.state, r.n])) as Record<
+    string,
+    number
+  >;
+}

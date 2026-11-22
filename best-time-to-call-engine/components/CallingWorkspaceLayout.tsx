@@ -13,7 +13,9 @@ import {
 import { useStoredState } from "@/lib/useStoredState";
 import ShiftTimeline from "./ShiftTimeline";
 
-const CallingWorkspaceLayout = () => {
+type Props = { leadsByState: Record<string, number> };
+
+const CallingWorkspaceLayout = ({ leadsByState }: Props) => {
   // Applied settings: saved in the browser, so they survive a reload.
   const [prefs, setPrefs] = useStoredState<ShiftSettings>(
     "shiftSettings",
@@ -55,7 +57,11 @@ const CallingWorkspaceLayout = () => {
             onSelect={setHour}
           />
         </div>
-        <MapPanel data={data} hourLabel={hourLabel(activeHour)} />
+        <MapPanel
+          data={data}
+          hourLabel={hourLabel(activeHour)}
+          leadsByState={leadsByState}
+        />
       </div>
       <WorkspaceSettings prefs={prefs} onApply={setPrefs} />
     </div>
