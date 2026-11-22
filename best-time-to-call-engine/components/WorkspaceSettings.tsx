@@ -1,10 +1,13 @@
+import type { ShiftSettings } from "@/lib/schedule";
 import AddPhoneNumbers from "./cards/AddPhoneNumbersCard";
-import CallingPreferences from "./cards/CallingPreferencesCard";
+import ShiftSettingsCard from "./cards/ShiftSettingsCard";
 
-const WorkspaceSettings = () => {
+type Props = { prefs: ShiftSettings; onApply: (prefs: ShiftSettings) => void };
+
+const WorkspaceSettings = ({ prefs, onApply }: Props) => {
   return (
     <aside className="flex flex-col gap-6">
-      <CallingPreferences />
+      <ShiftSettingsCard value={prefs} onApply={onApply} />
       <AddPhoneNumbers />
     </aside>
   );
