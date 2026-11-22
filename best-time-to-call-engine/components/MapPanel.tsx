@@ -14,6 +14,12 @@ export type StateInfo = {
   eligible: boolean;
 };
 
+// react-simple-maps types `path` as a plain function, but it is a d3 path
+// generator at runtime, and d3 path generators have .centroid().
+type PathWithCentroid = {
+  centroid: (feature: unknown) => [number, number];
+};
+
 type Props = {
   data?: Record<string, StateInfo> | null;
   hourLabel?: string;
@@ -96,41 +102,82 @@ export default function MapPanel({ data, hourLabel = "" }: Props) {
           style={{ width: "100%", height: "auto" }}
         >
           <Geographies geography={GEO_URL}>
-            {({ geographies }) =>
-              geographies.map((geo) => {
-                const code = NAME_TO_CODE[geo.properties?.name];
+            {({ geographies, path }) => (
+              <>
+                {/* 1. The states (your existing code) */}
+                {geographies.map((geo) => {
+                  const code = NAME_TO_CODE[geo.properties?.name];
 
-                if (!code) return null;
+                  if (!code) return null;
 
-                const isActive = active === code;
-                const isPinned = pinned === code;
+                  const isActive = active === code;
+                  const isPinned = pinned === code;
 
-                return (
-                  <Geography
-                    key={geo.rsmKey}
-                    geography={geo}
-                    fill={fillFor(safe[code])}
-                    stroke={isActive || isPinned ? "#111827" : "#ffffff"}
-                    strokeWidth={isActive || isPinned ? 2 : 0.9}
-                    onMouseEnter={() => setHovered(code)}
-                    onMouseLeave={() => setHovered(null)}
-                    onClick={() => {
-                      setPinned(isPinned ? null : code);
+                  return (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      fill={fillFor(safe[code])}
+                      stroke={isActive || isPinned ? "#111827" : "#ffffff"}
+                      strokeWidth={isActive || isPinned ? 2 : 0.9}
+                      onMouseEnter={() => setHovered(code)}
+                      onMouseLeave={() => setHovered(null)}
+                      onClick={() => {
+                        setPinned(isPinned ? null : code);
 
-                      if (!isPinned) {
-                        requestAnimationFrame(() => {
-                          detailsRef.current?.scrollIntoView({
-                            behavior: "smooth",
-                            block: "center",
+                        if (!isPinned) {
+                          requestAnimationFrame(() => {
+                            detailsRef.current?.scrollIntoView({
+                              behavior: "smooth",
+                              block: "center",
+                            });
                           });
-                        });
-                      }
-                    }}
-                    style={GEO_STYLE}
-                  />
-                );
-              })
-            }
+                        }
+                      }}
+                      style={GEO_STYLE}
+                    />
+                  );
+                })}
+
+                {/* 2. The labels, drawn after the states so they sit on top */}
+                {geographies.map((geo) => {
+                  const code = NAME_TO_CODE[geo.properties?.name];
+                  if (!code) return null;
+
+                  const [x, y] = (path as unknown as PathWithCentroid).centroid(
+                    geo,
+                  );
+                  if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+
+                  const info = safe[code];
+                  const showPct = info?.eligible;
+
+                  return (
+                    <g
+                      key={`label-${geo.rsmKey}`}
+                      textAnchor="middle"
+                      fill={showPct ? "#ffffff" : "#475569"}
+                      style={{ pointerEvents: "none" }}
+                    >
+                      <text
+                        x={x}
+                        y={showPct ? y - 3 : y}
+                        dy="0.35em"
+                        fontSize={11}
+                        fontWeight={700}
+                      >
+                        {code}
+                      </text>
+                      {showPct && (
+                        <text x={x} y={y + 9} dy="0.35em" fontSize={9}>
+                          {Math.round(info.score * 100)}%
+                        </text>
+                      )}
+                    </g>
+                  );
+                })}
+              </>
+            )}
           </Geographies>
         </ComposableMap>
       </div>
@@ -149,7 +196,7 @@ export default function MapPanel({ data, hourLabel = "" }: Props) {
       </div>
 
       {/* Selected state details */}
-      {active && (
+      {pinned && (
         <div
           ref={detailsRef}
           className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 scroll-mt-6"
@@ -160,7 +207,7 @@ export default function MapPanel({ data, hourLabel = "" }: Props) {
                 Selected state
               </p>
               <h3 className="mt-1 text-lg font-semibold text-slate-900">
-                {active}
+                {pinned}
               </h3>
             </div>
 
