@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getLeadsForState, logCall, undoLastCall } from "../../lib/leadActions";
 import type { CallKind, LeadRow, Outcome } from "../../lib/leadTypes";
+import "./StateLeadsList.css";
 
 const ACTIONS: { kind: CallKind; label: string }[] = [
   { kind: "answered", label: "Answered" },
@@ -82,6 +83,15 @@ export default function StateLeadsList({ state, count }: Props) {
     }
   }
 
+  function formatBreakdown(counts: LeadRow["outcomeCounts"]) {
+    const parts: string[] = [];
+    if (counts?.answered > 0) parts.push(`${counts.answered} answered`);
+    if (counts?.busy > 0) parts.push(`${counts.busy} busy`);
+    if (counts?.no_answer > 0) parts.push(`${counts.no_answer} no answer`);
+    if (counts?.failed > 0) parts.push(`${counts.failed} failed`);
+    return parts.join(", ");
+  }
+
   return (
     <div className="mt-4">
       <div className="flex items-baseline justify-between gap-2">
@@ -125,19 +135,22 @@ export default function StateLeadsList({ state, count }: Props) {
                     {formatPhone(r.phone)}
                   </a>
 
-                  <span className="flex items-center gap-2 text-xs text-slate-500">
-                    {r.attempts > 0
-                      ? `${r.attempts} call${r.attempts === 1 ? "" : "s"}`
-                      : "Not called yet"}
+                  <span className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                    {r.attempts > 0 ? (
+                      <span>
+                        {r.attempts} call{r.attempts === 1 ? "" : "s"} (
+                        {formatBreakdown(r.outcomeCounts)})
+                      </span>
+                    ) : (
+                      "Not called yet"
+                    )}
                     {badge && (
                       <span
-                        className={`rounded-full px-2 py-0.5 font-semibold ${
-                          r.lastPositive
-                            ? "bg-emerald-100 text-emerald-800"
-                            : badge.cls
+                        className={`outcome-badge outcome-badge--${
+                          r.lastPositive ? "positive" : r.lastOutcome
                         }`}
                       >
-                        {r.lastPositive ? "Positive" : badge.label}
+                        Latest: {r.lastPositive ? "Positive" : badge.label}
                       </span>
                     )}
                     {justLogged === r.id && (

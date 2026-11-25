@@ -35,14 +35,27 @@ export async function countLeadsByState(workspaceId: string) {
   >;
 }
 
-// One contact plus how it was last called. Shared by the list and the single lookup.
 const LEAD_SELECT = `
   select c.id, c.phone,
-         (select count(*)::int from call_attempts a where a.contact_id = c.id) as attempts,
+         coalesce(stats.attempts, 0)::int as attempts,
+         coalesce(stats.answered_count, 0)::int as answered_count,
+         coalesce(stats.no_answer_count, 0)::int as no_answer_count,
+         coalesce(stats.busy_count, 0)::int as busy_count,
+         coalesce(stats.failed_count, 0)::int as failed_count,
          l.outcome as last_outcome,
          l.positive as last_positive,
          l.called_at as last_called_at
   from contacts c
+  left join lateral (
+    select
+      count(*)::int as attempts,
+      count(*) filter (where outcome = 'answered')::int as answered_count,
+      count(*) filter (where outcome = 'no_answer')::int as no_answer_count,
+      count(*) filter (where outcome = 'busy')::int as busy_count,
+      count(*) filter (where outcome = 'failed')::int as failed_count
+    from call_attempts a
+    where a.contact_id = c.id
+  ) stats on true
   left join lateral (
     select outcome, positive, called_at
     from call_attempts
@@ -57,6 +70,12 @@ function toLeadRow(r: any): LeadRow {
     id: r.id,
     phone: r.phone,
     attempts: r.attempts,
+    outcomeCounts: {
+      answered: r.answered_count ?? 0,
+      no_answer: r.no_answer_count ?? 0,
+      busy: r.busy_count ?? 0,
+      failed: r.failed_count ?? 0,
+    },
     lastOutcome: r.last_outcome as Outcome | null,
     lastPositive: r.last_positive ?? false,
     lastCalledAt: r.last_called_at

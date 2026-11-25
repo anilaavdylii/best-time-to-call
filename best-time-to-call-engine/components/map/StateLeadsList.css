@@ -1,0 +1,41 @@
+.outcome-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  border-width: 1px;
+  border-style: solid;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
+}
+
+.outcome-badge--positive {
+  border-color: #a7f3d0;
+  background-color: #ecfdf5;
+  color: #065f46;
+}
+
+.outcome-badge--answered {
+  border-color: #c7d2fe;
+  background-color: #eef2ff;
+  color: #3730a3;
+}
+
+.outcome-badge--busy {
+  border-color: #fed7aa;
+  background-color: #fff7ed;
+  color: #9a3412;
+}
+
+.outcome-badge--no_answer {
+  border-color: #e4e4e7;
+  background-color: #f4f4f5;
+  color: #3f3f46;
+}
+
+.outcome-badge--failed {
+  border-color: #fecdd3;
+  background-color: #fff1f2;
+  color: #9f1239;
+}
