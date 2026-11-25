@@ -5,7 +5,6 @@ import { NAME_TO_CODE } from "@/lib/stateMapping";
 import type { StateInfo } from "@/lib/mapTypes";
 import StateLeadsList from "./StateLeadsList";
 
-// "CA" -> "California", built from the name -> code table we already have.
 const CODE_TO_NAME: Record<string, string> = Object.fromEntries(
   Object.entries(NAME_TO_CODE).map(([name, code]) => [code, name]),
 );
@@ -13,101 +12,109 @@ const CODE_TO_NAME: Record<string, string> = Object.fromEntries(
 type Props = {
   code: string; // "CA"
   info?: StateInfo; // schedule info for this state at the selected hour
-  leadCount: number; // numbers saved in this state
-  cardRef: Ref<HTMLDivElement>; // so the parent can scroll to the card
+  leadCount: number;
+  cardRef: Ref<HTMLDivElement>;
 };
 
-// The details of the state you clicked, and its phone numbers.
 export default function SelectedStateCard({
   code,
   info,
   leadCount,
   cardRef,
 }: Props) {
-  const name = CODE_TO_NAME[code] ?? code;
+  const normalizedCode = code.toUpperCase();
+  const name = CODE_TO_NAME[normalizedCode] ?? normalizedCode;
+
+  const noLeadsMessage = !info
+    ? `No leads in ${name} yet. Import numbers to get started.`
+    : info.eligible
+      ? `No leads in ${name} yet. This state is available for calling at the selected hour. Import numbers to get started.`
+      : `No leads in ${name} yet. This state is not available for calling at the selected hour. Import numbers to get started.`;
 
   return (
-    <div
+    <section
       ref={cardRef}
-      className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 scroll-mt-6"
+      aria-label={`${name} details`}
+      className="mt-4 scroll-mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-2xs"
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          <p className="text-[11px] font-semibold uppercase text-slate-500">
             Selected state
           </p>
-          <h3 className="mt-1 text-lg font-semibold text-slate-900">
-            {name}
-            <span className="ml-2 text-sm font-medium text-slate-500">
-              {code}
+          <div className="mt-0.5 flex items-baseline gap-2">
+            <h3 className="text-lg font-semibold tracking-tight text-slate-900">
+              {name}
+            </h3>
+            <span className="rounded bg-slate-200/80 px-1.5 py-0.5 font-mono text-xs font-medium text-slate-600">
+              {normalizedCode}
             </span>
-          </h3>
+          </div>
         </div>
 
         {info && (
           <span
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${
               info.eligible
-                ? "bg-emerald-100 text-emerald-800"
-                : "bg-slate-200 text-slate-700"
+                ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                : "border-slate-200 bg-slate-200/70 text-slate-700"
             }`}
           >
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                info.eligible ? "bg-emerald-500" : "bg-slate-500"
+              }`}
+            />
             {info.eligible ? "Available to call" : "Not available"}
           </span>
         )}
       </div>
 
       {info ? (
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div>
+        <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+          <div className="rounded-lg border border-slate-200/80 bg-white px-3 py-2">
             <p className="text-xs text-slate-500">Local time</p>
-            <p className="mt-1 text-sm font-semibold text-slate-800">
+            <p className="mt-0.5 text-sm font-semibold text-slate-900">
               {info.localTime}
             </p>
           </div>
-
-          <div>
-            <p className="text-xs text-slate-500">Time zone</p>
-            <p className="mt-1 text-sm font-semibold text-slate-800">
+          <div className="rounded-lg border border-slate-200/80 bg-white px-3 py-2">
+            <div className="text-xs text-slate-500">Time zone</div>
+            <div className="mt-0.5 text-sm font-semibold text-slate-900">
               {info.zone}
-            </p>
+            </div>
           </div>
-
-          <div>
-            <p className="text-xs text-slate-500">Opportunity score</p>
-            <p className="mt-1 text-sm font-semibold text-slate-800">
-              {info.eligible ? `${Math.round(info.score * 100)}%` : "—"}
-            </p>
-          </div>
-
-          <div>
-            <p className="text-xs text-slate-500">Leads</p>
-            <p className="mt-1 text-sm font-semibold text-slate-800">
+          <div className="rounded-lg border border-slate-200/80 bg-white px-3 py-2">
+            <div className="text-xs text-slate-500">Leads</div>
+            <div className="mt-0.5 text-sm font-semibold tabular-nums text-slate-900">
               {leadCount}
-            </p>
+            </div>
           </div>
         </div>
       ) : (
-        <p className="mt-3 text-sm text-slate-500">
+        <p className="mt-3 rounded-lg border border-slate-200/80 bg-white px-3 py-2 text-sm text-slate-500">
           No scheduling information available.
         </p>
       )}
 
-      {/* The numbers in this state, if there are any */}
       {leadCount > 0 ? (
         <>
           {info && !info.eligible && (
-            <p className="mt-4 text-sm text-amber-700">
+            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900">
               {name} is outside calling hours at the selected hour.
-            </p>
+            </div>
           )}
-          <StateLeadsList key={code} state={code} count={leadCount} />
+          <StateLeadsList
+            key={normalizedCode}
+            state={normalizedCode}
+            count={leadCount}
+          />
         </>
       ) : (
-        <p className="mt-4 text-sm text-slate-500">
-          No leads in {name} yet. Import numbers to see them here.
-        </p>
+        <div className="mt-4 rounded-lg border border-dashed border-slate-300 bg-white/70 px-4 py-3 text-sm text-slate-500">
+          {noLeadsMessage}
+        </div>
       )}
-    </div>
+    </section>
   );
 }

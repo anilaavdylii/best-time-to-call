@@ -95,9 +95,7 @@ export default function StateLeadsList({ state, count }: Props) {
   return (
     <div className="mt-4">
       <div className="flex items-baseline justify-between gap-2">
-        <h4 className="text-sm font-semibold text-slate-900">
-          Numbers in {state}
-        </h4>
+        <h4 className="text-sm font-semibold text-slate-900">Leads</h4>
         {rows && count > rows.length && (
           <p className="text-xs text-slate-500">
             Showing the first {rows.length} of {count}
@@ -173,8 +171,9 @@ export default function StateLeadsList({ state, count }: Props) {
                       type="button"
                       disabled={busyId === r.id}
                       onClick={() => log(r.id, a.kind)}
-                      className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      className={`action-btn action-btn--${a.kind}`}
                     >
+                      <span className="action-btn__dot" />
                       {a.label}
                     </button>
                   ))}
