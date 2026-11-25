@@ -1,13 +1,12 @@
 type Props = {
-  filledCount: number; // states drawn green
-  showAll: boolean; // are states without leads included?
+  filledCount: number;
+  showAll: boolean;
   unavailableCount: number;
   hasLeads: boolean;
-  callableLeads: number; // leads in callable states
+  callableLeads: number;
   totalLeads: number;
 };
 
-// The three number tiles above the map.
 export default function MapSummary({
   filledCount,
   showAll,
@@ -16,34 +15,38 @@ export default function MapSummary({
   callableLeads,
   totalLeads,
 }: Props) {
+  const metrics = [
+    {
+      value: filledCount,
+      label: showAll ? "Available states" : "Ready states",
+      color: "text-emerald-700",
+    },
+    {
+      value: unavailableCount,
+      label: "Unavailable",
+      color: "text-slate-600",
+    },
+    {
+      value: hasLeads ? `${callableLeads} of ${totalLeads}` : "—",
+      label: hasLeads ? "Available to call" : "No leads",
+      color: "text-indigo-700",
+    },
+  ];
+
   return (
-    <div className="mt-5 flex flex-wrap items-center gap-3 scroll-mt-6">
-      <div className="rounded-xl bg-emerald-50 px-4 py-3">
-        <p className="text-2xl font-bold text-emerald-700 tabular-nums">
-          {filledCount}
-        </p>
-        <p className="text-xs font-medium text-emerald-800">
-          {showAll ? "Available states" : "Available states with leads"}
-        </p>
-      </div>
-
-      <div className="rounded-xl bg-slate-50 px-4 py-3">
-        <p className="text-2xl font-bold text-slate-700 tabular-nums">
-          {unavailableCount}
-        </p>
-        <p className="text-xs font-medium text-slate-500">Unavailable states</p>
-      </div>
-
-      <div className="rounded-xl bg-indigo-50 px-4 py-3">
-        <p className="text-2xl font-bold text-indigo-700 tabular-nums">
-          {hasLeads ? callableLeads : "-"}
-        </p>
-        <p className="text-xs font-medium text-indigo-800">
-          {hasLeads
-            ? `Leads you can call (of ${totalLeads})`
-            : "Import numbers to see leads"}
-        </p>
-      </div>
-    </div>
+    <dl className="grid grid-cols-3 divide-x divide-slate-200 rounded-xl border border-slate-200 bg-slate-50/80">
+      {metrics.map((metric) => (
+        <div key={metric.label} className="min-w-0 px-3 py-2">
+          <dd
+            className={`truncate text-base font-bold tabular-nums sm:text-lg ${metric.color}`}
+          >
+            {metric.value}
+          </dd>
+          <dt className="truncate text-[11px] font-medium text-slate-500">
+            {metric.label}
+          </dt>
+        </div>
+      ))}
+    </dl>
   );
 }

@@ -8,7 +8,7 @@ import LeadsSwitch from "./LeadsSwitch";
 import MapLegend from "./MapLegend";
 import SelectedStateCard from "./SelectedStateCard";
 
-// Other files import this type from here, so keep exporting it.
+// Other files import this type from here, so kept the export
 export type { StateInfo };
 
 type Props = {
@@ -17,7 +17,6 @@ type Props = {
   leadsByState?: Record<string, number>;
 };
 
-// Holds the map's state and decides what is filled.
 export default function MapPanel({ data, leadsByState }: Props) {
   const safe = useMemo(() => data ?? {}, [data]);
   const leads = leadsByState ?? {};
@@ -27,7 +26,6 @@ export default function MapPanel({ data, leadsByState }: Props) {
   const [pinned, setPinned] = useState<string | null>(null);
   const [showAllStates, setShowAllStates] = useState(false);
 
-  // Numbers for the tiles
   const totalCount = Object.keys(safe).length;
   const availableCount = Object.values(safe).filter((s) => s.eligible).length;
   const totalLeads = Object.values(leads).reduce((sum, n) => sum + n, 0);
@@ -37,15 +35,12 @@ export default function MapPanel({ data, leadsByState }: Props) {
   );
 
   const hasLeads = totalLeads > 0;
-  // With no leads imported yet, a leads-only map would be empty, so show all.
   const showAll = showAllStates || !hasLeads;
 
-  // Filled = callable now, and (has leads, or we are showing all states).
   const isFilled = (code: string) =>
     !!safe[code]?.eligible && (showAll || (leads[code] ?? 0) > 0);
   const filledCount = Object.keys(safe).filter(isFilled).length;
 
-  // Click a state to pin it, click it again to unpin it.
   function select(code: string) {
     const unpin = pinned === code;
     setPinned(unpin ? null : code);
@@ -61,34 +56,35 @@ export default function MapPanel({ data, leadsByState }: Props) {
   }
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900">
-              US calling opportunities
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs">
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+        <div className="min-w-0 space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 sm:justify-start sm:gap-3">
+            <h2 className="text-base font-semibold tracking-tight text-slate-900">
+              US calling overview
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              States you can call during this hour of your shift.
-            </p>
+            <LeadsSwitch
+              checked={showAll}
+              disabled={!hasLeads}
+              onToggle={() => setShowAllStates((v) => !v)}
+            />
           </div>
+          <p className="text-xs text-slate-500">
+            States available to call during the selected shift hour.
+          </p>
         </div>
 
-        <MapSummary
-          filledCount={filledCount}
-          showAll={showAll}
-          unavailableCount={Math.max(0, totalCount - availableCount)}
-          hasLeads={hasLeads}
-          callableLeads={callableLeads}
-          totalLeads={totalLeads}
-        />
+        <div className="w-full xl:w-auto xl:shrink-0">
+          <MapSummary
+            filledCount={filledCount}
+            showAll={showAll}
+            unavailableCount={Math.max(0, totalCount - availableCount)}
+            hasLeads={hasLeads}
+            callableLeads={callableLeads}
+            totalLeads={totalLeads}
+          />
+        </div>
       </div>
-
-      <LeadsSwitch
-        checked={showAll}
-        disabled={!hasLeads}
-        onToggle={() => setShowAllStates((v) => !v)}
-      />
 
       <div className="mt-3">
         <StateMap
