@@ -2,7 +2,7 @@
  * 1. SETTINGS: the things you will actually edit
  * ------------------------------------------------------------------ */
 
-import type { StateInfo } from "@/components/MapPanel";
+import type { StateInfo } from "@/components/map/MapPanel";
 import { STATES_BY_TZ, ZONE_LABEL } from "./stateTimezones";
 // Where your team sits. Use an IANA name so daylight saving is handled for you.
 export const TEAM_TZ = "America/New_York";

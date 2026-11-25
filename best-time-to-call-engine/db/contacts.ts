@@ -1,5 +1,6 @@
 import { pool } from "./index";
 import type { ParsedNumber } from "@/lib/phone";
+import type { LeadRow, Outcome } from "../lib/leadTypes";
 
 // Saves numbers for one workspace. Numbers it already has are skipped.
 // Returns how many NEW rows were added.
@@ -32,4 +33,103 @@ export async function countLeadsByState(workspaceId: string) {
     string,
     number
   >;
+}
+
+// One contact plus how it was last called. Shared by the list and the single lookup.
+const LEAD_SELECT = `
+  select c.id, c.phone,
+         (select count(*)::int from call_attempts a where a.contact_id = c.id) as attempts,
+         l.outcome as last_outcome,
+         l.positive as last_positive,
+         l.called_at as last_called_at
+  from contacts c
+  left join lateral (
+    select outcome, positive, called_at
+    from call_attempts
+    where contact_id = c.id
+    order by called_at desc, id desc
+    limit 1
+  ) l on true`;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toLeadRow(r: any): LeadRow {
+  return {
+    id: r.id,
+    phone: r.phone,
+    attempts: r.attempts,
+    lastOutcome: r.last_outcome as Outcome | null,
+    lastPositive: r.last_positive ?? false,
+    lastCalledAt: r.last_called_at
+      ? new Date(r.last_called_at).toISOString()
+      : null,
+  };
+}
+
+// The numbers in one state. Order = who to call next:
+// never called first, then the one called longest ago.
+export async function listLeadsForState(
+  workspaceId: string,
+  state: string,
+  limit = 100,
+): Promise<LeadRow[]> {
+  const res = await pool.query(
+    `${LEAD_SELECT}
+     where c.workspace_id = $1 and c.state = $2
+     order by (l.called_at is not null), l.called_at asc, c.id
+     limit $3`,
+    [workspaceId, state, limit],
+  );
+  return res.rows.map(toLeadRow);
+}
+
+// One contact, but only if it belongs to this workspace.
+export async function getLead(workspaceId: string, contactId: number) {
+  const res = await pool.query(
+    `${LEAD_SELECT} where c.id = $1 and c.workspace_id = $2`,
+    [contactId, workspaceId],
+  );
+  return res.rows[0] ? toLeadRow(res.rows[0]) : null;
+}
+
+// The contact's state, but only if it belongs to this workspace (else null).
+export async function findContactState(workspaceId: string, contactId: number) {
+  const res = await pool.query<{ state: string | null }>(
+    "select state from contacts where id = $1 and workspace_id = $2",
+    [contactId, workspaceId],
+  );
+  return res.rows[0]?.state ?? null;
+}
+
+export async function insertCallAttempt(
+  contactId: number,
+  localHour: number,
+  outcome: Outcome,
+  positive: boolean,
+) {
+  await pool.query(
+    `insert into call_attempts (contact_id, called_at, local_hour, outcome, positive)
+     values ($1, now(), $2, $3, $4)`,
+    [contactId, localHour, outcome, positive],
+  );
+}
+
+// Deletes the most recent call of a contact (for "Undo"). The join makes sure
+// the contact belongs to this workspace. Returns true if a row was deleted.
+export async function deleteLastCallAttempt(
+  workspaceId: string,
+  contactId: number,
+) {
+  const res = await pool.query(
+    `delete from call_attempts
+     where id = (
+       select a.id
+       from call_attempts a
+       join contacts c on c.id = a.contact_id
+       where a.contact_id = $1 and c.workspace_id = $2
+       order by a.called_at desc, a.id desc
+       limit 1
+     )`,
+    [contactId, workspaceId],
+  );
+  return (res.rowCount ?? 0) > 0;
 }
