@@ -39,6 +39,16 @@ export default function ShiftSettingsCard({ value, onApply }: Props) {
   const appliedLabel =
     ZONES.find((z) => z.value === value.timezone)?.label ?? value.timezone;
 
+  const timezoneOptions = ZONES.some((zone) => zone.value === timezone)
+    ? ZONES
+    : [
+        ...ZONES,
+        {
+          value: timezone,
+          label: timezone,
+        },
+      ];
+
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <h2 className="text-lg font-semibold text-slate-900">Shift settings</h2>
@@ -57,7 +67,7 @@ export default function ShiftSettingsCard({ value, onApply }: Props) {
             onChange={(e) => setTz(e.target.value)}
             className={field}
           >
-            {ZONES.map((zone) => (
+            {timezoneOptions.map((zone) => (
               <option key={zone.value} value={zone.value}>
                 {zone.label}
               </option>
