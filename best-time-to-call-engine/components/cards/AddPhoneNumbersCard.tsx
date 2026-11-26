@@ -127,7 +127,7 @@ export default function AddPhoneNumbers() {
                           {x.raw && (
                             <span className="font-medium">{x.raw}</span>
                           )}
-                          {x.raw && " — "}
+                          {x.raw && " - "}
                           {x.reason}
                         </li>
                       ))}
