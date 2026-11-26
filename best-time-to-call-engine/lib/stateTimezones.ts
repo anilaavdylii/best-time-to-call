@@ -11,6 +11,7 @@ export const ZONE_LABEL: Record<string, string> = {
 export const STATES_BY_TZ: Record<string, string[]> = {
   "America/New_York": [
     "CT",
+    "DC",
     "DE",
     "FL",
     "GA",
@@ -28,7 +29,6 @@ export const STATES_BY_TZ: Record<string, string[]> = {
     "PA",
     "RI",
     "SC",
-    "TN",
     "VT",
     "VA",
     "WV",
@@ -48,6 +48,7 @@ export const STATES_BY_TZ: Record<string, string[]> = {
     "ND",
     "OK",
     "SD",
+    "TN",
     "TX",
     "WI",
   ],
