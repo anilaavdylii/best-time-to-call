@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import MapPanel from "./MapPanel";
+import MapPanel from "./map/MapPanel";
 import WorkspaceSettings from "./WorkspaceSettings";
 import {
   buildData,

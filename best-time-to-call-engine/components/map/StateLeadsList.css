@@ -1,0 +1,131 @@
+.outcome-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  border-width: 1px;
+  border-style: solid;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
+}
+
+.outcome-badge--positive {
+  border-color: #a7f3d0;
+  background-color: #ecfdf5;
+  color: #065f46;
+}
+
+.outcome-badge--answered {
+  border-color: #c7d2fe;
+  background-color: #eef2ff;
+  color: #3730a3;
+}
+
+.outcome-badge--busy {
+  border-color: #fed7aa;
+  background-color: #fff7ed;
+  color: #9a3412;
+}
+
+.outcome-badge--no_answer {
+  border-color: #e4e4e7;
+  background-color: #f4f4f5;
+  color: #3f3f46;
+}
+
+.outcome-badge--failed {
+  border-color: #fecdd3;
+  background-color: #fff1f2;
+  color: #9f1239;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 100ms ease;
+}
+
+.action-btn:hover:not(:disabled) {
+  background-color: #f8fafc;
+}
+
+.action-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.action-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.action-btn__dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+/* Positive */
+.action-btn--positive .action-btn__dot {
+  background-color: #10b981;
+}
+.action-btn--positive:hover:not(:disabled) {
+  border-color: #a7f3d0;
+  background-color: #ecfdf5;
+  color: #065f46;
+}
+
+/* Answered */
+.action-btn--answered .action-btn__dot {
+  background-color: #6366f1;
+}
+.action-btn--answered:hover:not(:disabled) {
+  border-color: #c7d2fe;
+  background-color: #eef2ff;
+  color: #3730a3;
+}
+
+/* Busy */
+.action-btn--busy .action-btn__dot {
+  background-color: #f97316;
+}
+.action-btn--busy:hover:not(:disabled) {
+  border-color: #fed7aa;
+  background-color: #fff7ed;
+  color: #9a3412;
+}
+
+/* No answer */
+.action-btn--no_answer .action-btn__dot {
+  background-color: #71717a;
+}
+.action-btn--no_answer:hover:not(:disabled) {
+  border-color: #e4e4e7;
+  background-color: #f4f4f5;
+  color: #3f3f46;
+}
+
+/* Failed */
+.action-btn--failed .action-btn__dot {
+  background-color: #f43f5e;
+}
+.action-btn--failed:hover:not(:disabled) {
+  border-color: #fecdd3;
+  background-color: #fff1f2;
+  color: #9f1239;
+}
