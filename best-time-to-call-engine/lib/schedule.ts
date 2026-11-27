@@ -17,10 +17,10 @@ export const DEFAULT_SHIFT: ShiftSettings = {
   start: "09:00",
 };
 
-export const WINDOW_START = 8; // 8am
+export const WINDOW_START = 9;
 export const WINDOW_END = 21; // 9pm (calls must start before this hour)
 
-const ALLO_PRIOR_ATTEMPTS = 20;
+const BENCHMARK_PRIOR_ATTEMPTS = 10;
 
 export const STATE_TZ: Record<string, string> = Object.fromEntries(
   Object.entries(STATES_BY_TZ).flatMap(([timezone, codes]) =>
@@ -91,17 +91,25 @@ export function buildData(
   const instant = instantForTeamHour(teamHour, prefs.timezone, base);
   const out: Record<string, StateInfo> = {};
 
-  for (const [code, timezone] of Object.entries(STATE_TZ)) {
+  for (const [code, timezone] of Object?.entries(STATE_TZ)) {
     const localHour = partsIn(timezone, instant).h;
 
     const inWindow = localHour >= WINDOW_START && localHour < WINDOW_END;
 
     const eligible = onShift && inWindow;
 
-    const ownStats = callStats[code]?.[localHour];
-    const answered = ownStats?.answered ?? 0;
-    const attempts = ownStats?.attempts ?? 0;
+    // Combine call history across all hours for this state
+    const stateStats = Object.values(callStats[code] ?? {});
 
+    const answered = stateStats.reduce(
+      (total, stats) => total + stats.answered,
+      0,
+    );
+
+    const attempts = stateStats.reduce(
+      (total, stats) => total + stats.attempts,
+      0,
+    );
     const baselineRate = baselineRates[localHour];
 
     let score = 0;
@@ -116,12 +124,12 @@ export function buildData(
       baselineRate <= 1
     ) {
       score =
-        (answered + ALLO_PRIOR_ATTEMPTS * baselineRate) /
-        (attempts + ALLO_PRIOR_ATTEMPTS);
+        (answered + BENCHMARK_PRIOR_ATTEMPTS * baselineRate) /
+        (attempts + BENCHMARK_PRIOR_ATTEMPTS);
 
       predictionAvailable = true;
       predictionSource = attempts > 0 ? "combined" : "allo";
-    } else if (eligible && attempts >= ALLO_PRIOR_ATTEMPTS) {
+    } else if (eligible && attempts >= BENCHMARK_PRIOR_ATTEMPTS) {
       score = answered / attempts;
       predictionAvailable = true;
       predictionSource = "history";

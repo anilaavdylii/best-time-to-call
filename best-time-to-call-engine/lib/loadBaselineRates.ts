@@ -1,8 +1,8 @@
 export async function loadBaselineRates(): Promise<Record<number, number>> {
-  const response = await fetch("/data/allo_hourly_baseline.csv");
+  const response = await fetch("/data/national_flu_survey_baseline.csv");
 
   if (!response.ok) {
-    throw new Error("Could not load Allo baseline CSV");
+    throw new Error("Could not load National Flu Surveys baseline CSV");
   }
 
   const csv = await response.text();
@@ -11,7 +11,7 @@ export async function loadBaselineRates(): Promise<Record<number, number>> {
   const headers = lines[0].split(",").map((h) => h.trim());
 
   const hourIndex = headers.indexOf("local_hour_24");
-  const rateIndex = headers.indexOf("connect_rate_decimal");
+  const rateIndex = headers.indexOf("answer_rate_decimal");
 
   if (hourIndex === -1 || rateIndex === -1) {
     throw new Error("Required CSV columns are missing");
