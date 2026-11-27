@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { ShiftSettings } from "@/lib/schedule";
 import { ScheduleHourRow } from "./ScheduleHourRow";
 import { useDialSchedule } from "../../lib/scheduleHelpers";
+import type { CallStatsByStateHour } from "../../lib/mapTypes";
 
 type Props = {
   hours: number[];
@@ -14,6 +15,7 @@ type Props = {
   selectedHour?: number;
   onSelectHour: (hour: number) => void;
   onSelectState?: (hour: number, stateCode: string) => void;
+  callStats: CallStatsByStateHour;
 };
 
 export function SchedulePanel({
@@ -21,6 +23,7 @@ export function SchedulePanel({
   prefs,
   today,
   baselineRates,
+  callStats,
   leadsByState,
   selectedHour,
   onSelectHour,
@@ -35,6 +38,7 @@ export function SchedulePanel({
     prefs,
     today,
     baselineRates,
+    callStats,
     leadsByState,
   );
 

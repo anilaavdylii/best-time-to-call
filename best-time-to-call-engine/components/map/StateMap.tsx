@@ -66,7 +66,6 @@ export default function StateMap({
       <Geographies geography={GEO_URL}>
         {({ geographies, path }) => (
           <>
-            {/* 1. Draw the states */}
             {geographies.map((geo) => {
               const code = NAME_TO_CODE[geo.properties?.name];
               if (!code) return null;
@@ -93,7 +92,6 @@ export default function StateMap({
               );
             })}
 
-            {/* 2. Draw state labels */}
             {geographies.map((geo) => {
               const code = NAME_TO_CODE[geo.properties?.name];
               if (!code) return null;

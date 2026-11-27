@@ -41,14 +41,12 @@ export function ScheduleHourRow({
             : "bg-white"
       }`}
     >
-      {/* Collapsed Header Row */}
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={isOpen}
         className="group flex w-full items-center gap-4 px-5 py-3.5 text-left transition-colors hover:bg-slate-50"
       >
-        {/* Fixed-width Time Column so every row lines up vertically */}
         <div className="w-20 shrink-0">
           <div className="text-sm font-semibold tabular-nums text-slate-900">
             {hourLabel(teamHour)}
@@ -64,7 +62,6 @@ export function ScheduleHourRow({
           )}
         </div>
 
-        {/* Middle Summary Column */}
         <div className="min-w-0 flex-1">
           {topGroup ? (
             <>
@@ -96,7 +93,6 @@ export function ScheduleHourRow({
           )}
         </div>
 
-        {/* Right Metrics & Chevron */}
         <div className="flex shrink-0 items-center gap-3">
           {topGroup && (
             <>
@@ -135,7 +131,6 @@ export function ScheduleHourRow({
         </div>
       </button>
 
-      {/* Expanded Drawer */}
       {isOpen && (
         <div className="border-t border-slate-100 bg-slate-50/80 px-5 pb-4 pt-3">
           {item.groups.length > 0 ? (

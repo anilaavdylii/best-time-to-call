@@ -42,7 +42,6 @@ export default function AddPhoneNumbers() {
 
   return (
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs transition-colors">
-      {/* Header / Accordion Trigger */}
       <h2>
         <button
           type="button"
@@ -104,7 +103,6 @@ export default function AddPhoneNumbers() {
         </button>
       </h2>
 
-      {/* Expandable Body */}
       {open && (
         <div
           id="import-panel"
@@ -163,7 +161,6 @@ export default function AddPhoneNumbers() {
               </div>
             </div>
 
-            {/* Feedback Banner */}
             <div aria-live="polite" className="empty:hidden">
               {failed && (
                 <div className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-xs font-medium text-rose-700">

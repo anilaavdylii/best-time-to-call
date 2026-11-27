@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import MapPanel from "./map/MapPanel";
 import WorkspaceSettings from "./WorkspaceSettings";
 import ShiftTimeline from "./ShiftTimeline";
-
+import type { CallStatsByStateHour } from "@/lib/mapTypes";
 import {
   buildData,
   DEFAULT_SHIFT,
@@ -16,6 +16,7 @@ import {
 import { loadBaselineRates } from "@/lib/loadBaselineRates";
 import { useStoredState } from "@/lib/useStoredState";
 import { SchedulePanel } from "./schedule/SchedulePanel";
+import { getCallStatsForPrediction } from "@/lib/leadActions";
 
 type Props = {
   leadsByState: Record<string, number>;
@@ -35,6 +36,30 @@ const CallingWorkspaceLayout = ({ leadsByState }: Props) => {
   const [baselineRates, setBaselineRates] = useState<Record<number, number>>(
     {},
   );
+  const [callStats, setCallStats] = useState<CallStatsByStateHour>({});
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCallStats() {
+      try {
+        const stats = await getCallStatsForPrediction();
+
+        if (!cancelled) {
+          setCallStats(stats);
+          console.log("CALL HISTORY:", stats);
+        }
+      } catch (error) {
+        console.error("CALL HISTORY ERROR:", error);
+      }
+    }
+
+    loadCallStats();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem("shiftSettings");
@@ -75,8 +100,11 @@ const CallingWorkspaceLayout = ({ leadsByState }: Props) => {
 
   // Calculate state availability and predictions.
   const data = useMemo(
-    () => (today ? buildData(prefs, activeHour, today, baselineRates) : null),
-    [prefs, activeHour, today, baselineRates],
+    () =>
+      today
+        ? buildData(prefs, activeHour, today, baselineRates, callStats)
+        : null,
+    [prefs, activeHour, today, baselineRates, callStats],
   );
 
   return (
@@ -141,6 +169,7 @@ const CallingWorkspaceLayout = ({ leadsByState }: Props) => {
               setHour(selectedHour);
               setActiveTab("map");
             }}
+            callStats={callStats}
           />
         )}
       </div>

@@ -1,6 +1,7 @@
 import { pool } from "./index";
 import type { ParsedNumber } from "@/lib/phone";
 import type { LeadRow, Outcome } from "../lib/leadTypes";
+import type { CallStatsByStateHour } from "../lib/mapTypes";
 
 // Saves numbers for one workspace. Numbers it already has are skipped.
 // Returns how many NEW rows were added.
@@ -33,6 +34,52 @@ export async function countLeadsByState(workspaceId: string) {
     string,
     number
   >;
+}
+
+// Returns outbound answer statistics for each state and local hour.
+export async function getCallStatsByStateHour(
+  workspaceId: string,
+): Promise<CallStatsByStateHour> {
+  const res = await pool.query<{
+    state: string;
+    local_hour: number;
+    answered: number;
+    attempts: number;
+  }>(
+    `SELECT
+       c.state,
+       a.local_hour,
+       COUNT(*) FILTER (
+         WHERE a.outcome = 'answered'
+       )::int AS answered,
+       COUNT(*) FILTER (
+         WHERE a.outcome IN ('answered', 'no_answer', 'busy')
+       )::int AS attempts
+     FROM call_attempts a
+     JOIN contacts c ON c.id = a.contact_id
+     WHERE c.workspace_id = $1
+       AND c.state IS NOT NULL
+       AND a.local_hour BETWEEN 0 AND 23
+     GROUP BY c.state, a.local_hour`,
+    [workspaceId],
+  );
+
+  const stats: CallStatsByStateHour = {};
+
+  for (const row of res.rows) {
+    const state = row.state.toUpperCase();
+
+    if (!stats[state]) {
+      stats[state] = {};
+    }
+
+    stats[state][row.local_hour] = {
+      answered: row.answered,
+      attempts: row.attempts,
+    };
+  }
+
+  return stats;
 }
 
 const LEAD_SELECT = `

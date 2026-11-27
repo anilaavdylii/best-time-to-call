@@ -6,4 +6,18 @@ export type StateInfo = {
   teamTime: string;
   eligible: boolean;
   predictionAvailable?: boolean;
+  predictionSource?: PredictionSource;
+  ownAttempts?: number;
 };
+
+export type HourlyCallStats = {
+  answered: number;
+  attempts: number;
+};
+
+export type CallStatsByStateHour = Record<
+  string,
+  Record<number, HourlyCallStats>
+>;
+
+export type PredictionSource = "allo" | "combined" | "history";

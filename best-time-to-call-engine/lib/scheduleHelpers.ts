@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { buildData, type ShiftSettings } from "@/lib/schedule";
 import { NAME_TO_CODE } from "@/lib/stateMapping";
+import { CallStatsByStateHour } from "./mapTypes";
 
 export const CODE_TO_NAME: Record<string, string> = Object.fromEntries(
   Object.entries(NAME_TO_CODE).map(([name, code]) => [code, name]),
@@ -47,11 +48,18 @@ export function useDialSchedule(
   prefs: ShiftSettings,
   today: Date,
   baselineRates: Record<number, number>,
+  callStats: CallStatsByStateHour,
   leadsByState: Record<string, number>,
 ): HourScheduleItem[] {
   return useMemo(() => {
     return (hours ?? []).map((teamHour) => {
-      const stateData = buildData(prefs, teamHour, today, baselineRates);
+      const stateData = buildData(
+        prefs,
+        teamHour,
+        today,
+        baselineRates,
+        callStats,
+      );
       const zoneGroups = new Map<string, ZoneGroup>();
       let availableStateCount = 0;
       let totalLeads = 0;
@@ -108,5 +116,5 @@ export function useDialSchedule(
         topGroup: groups[0] ?? null,
       };
     });
-  }, [hours, prefs, today, baselineRates, leadsByState]);
+  }, [hours, prefs, today, baselineRates, callStats, leadsByState]);
 }

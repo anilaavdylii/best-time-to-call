@@ -6,9 +6,11 @@ import {
   deleteLastCallAttempt,
   findContactState,
   getLead,
+  getCallStatsByStateHour,
   insertCallAttempt,
   listLeadsForState,
 } from "@/db/contacts";
+import type { CallStatsByStateHour } from "./mapTypes";
 import type { CallKind, LeadRow, Outcome } from "./leadTypes";
 
 const KINDS: CallKind[] = [
@@ -37,6 +39,15 @@ export async function getLeadsForState(state: string): Promise<LeadRow[]> {
   if (!workspaceId) return [];
 
   return listLeadsForState(workspaceId, state);
+}
+
+// Gets this workspace's call history for the prediction model.
+export async function getCallStatsForPrediction(): Promise<CallStatsByStateHour> {
+  const workspaceId = await getWorkspaceId();
+
+  if (!workspaceId) return {};
+
+  return getCallStatsByStateHour(workspaceId);
 }
 
 // Records what happened on a call. The time is always "now", on the real clock.
