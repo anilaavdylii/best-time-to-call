@@ -11,14 +11,22 @@ type Props = {
   onSelectState?: (stateCode: string) => void;
 };
 
+function formatConnects(leads: number, expectedConnects: number) {
+  if (leads <= 0 || expectedConnects <= 0) return "0 est. connects";
+  const rounded = Math.round(expectedConnects);
+  return rounded === 0 ? "<1 est. connects" : `~${rounded} est. connects`;
+}
+
 export function ZoneGroupCard({ group, isTopPriority, onSelectState }: Props) {
+  const showPriorityBadge = isTopPriority && group.leads > 0;
+
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3.5 shadow-2xs">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-2">
             <p className="text-sm font-semibold text-slate-900">{group.zone}</p>
-            {isTopPriority && (
+            {showPriorityBadge && (
               <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[11px] font-semibold text-emerald-700">
                 #1 Priority
               </span>
@@ -26,8 +34,8 @@ export function ZoneGroupCard({ group, isTopPriority, onSelectState }: Props) {
           </div>
           <p className="mt-0.5 text-xs text-slate-500">
             {group.localTime} local time · {group.leads.toLocaleString()} leads
-            {group.rate !== null
-              ? ` · ~${Math.max(1, Math.round(group.expectedConnects))} est. connects`
+            {group.rate !== null && group.leads > 0
+              ? ` · ${formatConnects(group.leads, group.expectedConnects)}`
               : ""}
           </p>
         </div>
@@ -49,34 +57,49 @@ export function ZoneGroupCard({ group, isTopPriority, onSelectState }: Props) {
       </div>
 
       <div className="mt-3 flex flex-wrap gap-1.5">
-        {group.states.map(({ code, leads }) => {
+        {group.states.map(({ code, leads, rate }) => {
           const stateName = CODE_TO_NAME[code] ?? code;
-          const label = (
-            <>
-              <span>{code}</span>
-              <span className="text-slate-400">·</span>
-              <span className="tabular-nums text-slate-500">{leads}</span>
-            </>
+          const hasCustomRate =
+            rate !== null &&
+            group.rate !== null &&
+            Math.abs(rate - group.rate) >= 0.001;
+
+          const content = (
+            <span className="inline-flex items-center gap-1.5">
+              <span className="font-semibold text-slate-800">{code}</span>
+              <span className="tabular-nums text-slate-500">
+                {leads} {leads === 1 ? "lead" : "leads"}
+              </span>
+              {hasCustomRate && (
+                <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-emerald-700">
+                  {(rate * 100).toFixed(1)}%
+                </span>
+              )}
+            </span>
           );
 
           return onSelectState ? (
             <button
               key={code}
               type="button"
-              title={`${stateName} (${leads} leads)`}
+              title={`${stateName} · ${leads} leads${
+                rate !== null
+                  ? ` · ${(rate * 100).toFixed(1)}% est. answer`
+                  : ""
+              }`}
               onClick={() => onSelectState(code)}
-              className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-900"
+              className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs transition-colors hover:border-emerald-300 hover:bg-emerald-50"
             >
-              {label}
+              {content}
             </button>
           ) : (
-            <span
+            <div
               key={code}
               title={stateName}
-              className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700"
+              className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs"
             >
-              {label}
-            </span>
+              {content}
+            </div>
           );
         })}
       </div>
