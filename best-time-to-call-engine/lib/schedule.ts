@@ -1,4 +1,4 @@
-import type { StateInfo } from "@/lib/mapTypes";
+import type { StateInfo, CallStatsByStateHour } from "@/lib/mapTypes";
 import { STATES_BY_TZ, ZONE_LABEL } from "./stateTimezones";
 
 export const TEAM_TZ = "America/New_York";
@@ -19,6 +19,8 @@ export const DEFAULT_SHIFT: ShiftSettings = {
 
 export const WINDOW_START = 8; // 8am
 export const WINDOW_END = 21; // 9pm (calls must start before this hour)
+
+const ALLO_PRIOR_ATTEMPTS = 20;
 
 export const STATE_TZ: Record<string, string> = Object.fromEntries(
   Object.entries(STATES_BY_TZ).flatMap(([timezone, codes]) =>
@@ -83,6 +85,7 @@ export function buildData(
   teamHour: number,
   base: Date,
   baselineRates: Record<number, number> = {},
+  callStats: CallStatsByStateHour = {},
 ): Record<string, StateInfo> {
   const onShift = shiftHours(prefs).includes(teamHour);
   const instant = instantForTeamHour(teamHour, prefs.timezone, base);
@@ -95,13 +98,41 @@ export function buildData(
 
     const eligible = onShift && inWindow;
 
-    // Get the rate from the CSV data loaded by the application.
-    const baselineRate = eligible ? baselineRates[localHour] : undefined;
+    const ownStats = callStats[code]?.[localHour];
+    const answered = ownStats?.answered ?? 0;
+    const attempts = ownStats?.attempts ?? 0;
+
+    const baselineRate = baselineRates[localHour];
+
+    let score = 0;
+    let predictionAvailable = false;
+    let predictionSource: StateInfo["predictionSource"];
+
+    if (
+      eligible &&
+      baselineRate !== undefined &&
+      Number.isFinite(baselineRate) &&
+      baselineRate >= 0 &&
+      baselineRate <= 1
+    ) {
+      score =
+        (answered + ALLO_PRIOR_ATTEMPTS * baselineRate) /
+        (attempts + ALLO_PRIOR_ATTEMPTS);
+
+      predictionAvailable = true;
+      predictionSource = attempts > 0 ? "combined" : "allo";
+    } else if (eligible && attempts >= ALLO_PRIOR_ATTEMPTS) {
+      score = answered / attempts;
+      predictionAvailable = true;
+      predictionSource = "history";
+    }
 
     out[code] = {
       eligible,
-      score: baselineRate ?? 0,
-      predictionAvailable: baselineRate !== undefined,
+      score,
+      predictionAvailable,
+      predictionSource,
+      ownAttempts: attempts,
       zone: ZONE_LABEL[timezone] ?? timezone,
       localTime: fmtHour(localHour),
       teamTime: fmtHour(teamHour),

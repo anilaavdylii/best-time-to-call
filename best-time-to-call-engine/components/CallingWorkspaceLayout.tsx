@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import MapPanel from "./map/MapPanel";
 import WorkspaceSettings from "./WorkspaceSettings";
 import ShiftTimeline from "./ShiftTimeline";
-
+import type { CallStatsByStateHour } from "@/lib/mapTypes";
 import {
   buildData,
   DEFAULT_SHIFT,
@@ -13,20 +13,21 @@ import {
   shiftHours,
   type ShiftSettings,
 } from "@/lib/schedule";
-
 import { loadBaselineRates } from "@/lib/loadBaselineRates";
 import { useStoredState } from "@/lib/useStoredState";
+import { SchedulePanel } from "./schedule/SchedulePanel";
+import { getCallStatsForPrediction } from "@/lib/leadActions";
 
 type Props = {
   leadsByState: Record<string, number>;
 };
 
 const CallingWorkspaceLayout = ({ leadsByState }: Props) => {
-  // Applied settings: saved in the browser.
   const [prefs, setPrefs] = useStoredState<ShiftSettings>(
     "shiftSettings",
     DEFAULT_SHIFT,
   );
+  const [activeTab, setActiveTab] = useState<"map" | "schedule">("map");
 
   const [hour, setHour] = useState(shiftHours(DEFAULT_SHIFT)[0]);
   const [today, setToday] = useState<Date | null>(null);
@@ -35,8 +36,31 @@ const CallingWorkspaceLayout = ({ leadsByState }: Props) => {
   const [baselineRates, setBaselineRates] = useState<Record<number, number>>(
     {},
   );
+  const [callStats, setCallStats] = useState<CallStatsByStateHour>({});
 
-  // Initialize timezone and current date.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCallStats() {
+      try {
+        const stats = await getCallStatsForPrediction();
+
+        if (!cancelled) {
+          setCallStats(stats);
+          console.log("CALL HISTORY:", stats);
+        }
+      } catch (error) {
+        console.error("CALL HISTORY ERROR:", error);
+      }
+    }
+
+    loadCallStats();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(() => {
     const saved = localStorage.getItem("shiftSettings");
 
@@ -50,7 +74,6 @@ const CallingWorkspaceLayout = ({ leadsByState }: Props) => {
     setToday(new Date());
   }, [setPrefs]);
 
-  // Load Allo benchmark rates from the CSV.
   useEffect(() => {
     let cancelled = false;
 
@@ -77,26 +100,78 @@ const CallingWorkspaceLayout = ({ leadsByState }: Props) => {
 
   // Calculate state availability and predictions.
   const data = useMemo(
-    () => (today ? buildData(prefs, activeHour, today, baselineRates) : null),
-    [prefs, activeHour, today, baselineRates],
+    () =>
+      today
+        ? buildData(prefs, activeHour, today, baselineRates, callStats)
+        : null,
+    [prefs, activeHour, today, baselineRates, callStats],
   );
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_0.85fr]">
       <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-4">
-          <ShiftTimeline
-            hours={hours}
-            activeHour={activeHour}
-            onSelect={setHour}
-          />
-        </div>
+        <div
+          role="tablist"
+          aria-label="Calling workspace views"
+          className="grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "map"}
+            onClick={() => setActiveTab("map")}
+            className={`rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors ${
+              activeTab === "map"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-500 hover:text-slate-900"
+            }`}
+          >
+            Map
+          </button>
 
-        <MapPanel
-          data={data}
-          hourLabel={hourLabel(activeHour)}
-          leadsByState={leadsByState}
-        />
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "schedule"}
+            onClick={() => setActiveTab("schedule")}
+            className={`rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors ${
+              activeTab === "schedule"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-500 hover:text-slate-900"
+            }`}
+          >
+            12-hour schedule
+          </button>
+        </div>
+        {activeTab === "map" && (
+          <>
+            <ShiftTimeline
+              hours={hours}
+              activeHour={activeHour}
+              onSelect={setHour}
+            />
+
+            <MapPanel
+              data={data}
+              hourLabel={hourLabel(activeHour)}
+              leadsByState={leadsByState}
+            />
+          </>
+        )}
+        {activeTab === "schedule" && today && (
+          <SchedulePanel
+            hours={hours}
+            prefs={prefs}
+            today={today}
+            baselineRates={baselineRates}
+            leadsByState={leadsByState}
+            onSelectHour={(selectedHour) => {
+              setHour(selectedHour);
+              setActiveTab("map");
+            }}
+            callStats={callStats}
+          />
+        )}
       </div>
 
       <WorkspaceSettings prefs={prefs} onApply={setPrefs} />
