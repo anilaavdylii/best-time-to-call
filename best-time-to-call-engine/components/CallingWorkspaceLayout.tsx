@@ -22,11 +22,11 @@ type Props = {
 };
 
 const CallingWorkspaceLayout = ({ leadsByState }: Props) => {
-  // Applied settings: saved in the browser.
   const [prefs, setPrefs] = useStoredState<ShiftSettings>(
     "shiftSettings",
     DEFAULT_SHIFT,
   );
+  const [activeTab, setActiveTab] = useState<"map" | "schedule">("map");
 
   const [hour, setHour] = useState(shiftHours(DEFAULT_SHIFT)[0]);
   const [today, setToday] = useState<Date | null>(null);
@@ -36,7 +36,6 @@ const CallingWorkspaceLayout = ({ leadsByState }: Props) => {
     {},
   );
 
-  // Initialize timezone and current date.
   useEffect(() => {
     const saved = localStorage.getItem("shiftSettings");
 
@@ -50,7 +49,6 @@ const CallingWorkspaceLayout = ({ leadsByState }: Props) => {
     setToday(new Date());
   }, [setPrefs]);
 
-  // Load Allo benchmark rates from the CSV.
   useEffect(() => {
     let cancelled = false;
 
@@ -84,19 +82,66 @@ const CallingWorkspaceLayout = ({ leadsByState }: Props) => {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_0.85fr]">
       <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-4">
-          <ShiftTimeline
-            hours={hours}
-            activeHour={activeHour}
-            onSelect={setHour}
-          />
+        <div
+          role="tablist"
+          aria-label="Calling workspace views"
+          className="grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "map"}
+            onClick={() => setActiveTab("map")}
+            className={`rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors ${
+              activeTab === "map"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-500 hover:text-slate-900"
+            }`}
+          >
+            Map
+          </button>
+
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "schedule"}
+            onClick={() => setActiveTab("schedule")}
+            className={`rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors ${
+              activeTab === "schedule"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-500 hover:text-slate-900"
+            }`}
+          >
+            12-hour schedule
+          </button>
         </div>
 
-        <MapPanel
-          data={data}
-          hourLabel={hourLabel(activeHour)}
-          leadsByState={leadsByState}
-        />
+        {activeTab === "map" && (
+          <>
+            <ShiftTimeline
+              hours={hours}
+              activeHour={activeHour}
+              onSelect={setHour}
+            />
+
+            <MapPanel
+              data={data}
+              hourLabel={hourLabel(activeHour)}
+              leadsByState={leadsByState}
+            />
+          </>
+        )}
+
+        {activeTab === "schedule" && (
+          <div className="rounded-xl border border-slate-200 bg-white p-6">
+            <h2 className="text-base font-semibold text-slate-900">
+              12-hour dialing schedule
+            </h2>
+            <p className="mt-2 text-sm text-slate-500">
+              Your hourly dialing schedule will appear here.
+            </p>
+          </div>
+        )}
       </div>
 
       <WorkspaceSettings prefs={prefs} onApply={setPrefs} />
