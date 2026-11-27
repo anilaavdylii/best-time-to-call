@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import type { StateInfo } from "../../lib/mapTypes";
-import StateMap from "./StateMap";
+import StateMap, { StatePriority } from "./StateMap";
 import MapSummary from "./MapSummary";
 import LeadsSwitch from "./LeadsSwitch";
 import MapLegend from "./MapLegend";
@@ -55,6 +55,20 @@ export default function MapPanel({ data, leadsByState }: Props) {
     }
   }
 
+  const getPriority = (code: string): StatePriority => {
+    const state = safe[code];
+
+    if (!state?.eligible) return "unavailable";
+
+    if (!state.predictionAvailable) return "no-data";
+
+    if (state.score >= 0.27) return "high";
+
+    if (state.score >= 0.24) return "medium";
+
+    return "low";
+  };
+
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
@@ -90,6 +104,7 @@ export default function MapPanel({ data, leadsByState }: Props) {
         <StateMap
           leads={leads}
           isFilled={isFilled}
+          getPriority={getPriority}
           active={hovered ?? pinned}
           pinned={pinned}
           onHover={setHovered}
