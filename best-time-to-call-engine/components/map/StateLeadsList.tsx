@@ -27,11 +27,12 @@ function formatPhone(phone: string) {
 }
 
 type Props = {
-  state: string; // "CA"
-  count: number; // leads in this state; when it changes, the list reloads
+  state: string;
+  count: number;
+  onCallLogged: () => Promise<void>;
 };
 
-export default function StateLeadsList({ state, count }: Props) {
+export default function StateLeadsList({ state, count, onCallLogged }: Props) {
   const [rows, setRows] = useState<LeadRow[] | null>(null); // null = loading
   const [busyId, setBusyId] = useState<number | null>(null);
   const [justLogged, setJustLogged] = useState<number | null>(null); // can be undone
@@ -56,12 +57,21 @@ export default function StateLeadsList({ state, count }: Props) {
   async function log(id: number, kind: CallKind) {
     setBusyId(id);
     setError(false);
+
     try {
       const row = await logCall(id, kind);
       if (!row) throw new Error("not saved");
+
       replaceRow(row);
       setJustLogged(id);
-    } catch {
+
+      try {
+        await onCallLogged();
+      } catch (error) {
+        console.error("Failed to refresh call stats:", error);
+      }
+    } catch (error) {
+      console.error("Failed to log call:", error);
       setError(true);
     } finally {
       setBusyId(null);
@@ -71,12 +81,21 @@ export default function StateLeadsList({ state, count }: Props) {
   async function undo(id: number) {
     setBusyId(id);
     setError(false);
+
     try {
       const row = await undoLastCall(id);
       if (!row) throw new Error("nothing to undo");
+
       replaceRow(row);
       setJustLogged(null);
-    } catch {
+
+      try {
+        await onCallLogged();
+      } catch (error) {
+        console.error("Failed to refresh call stats:", error);
+      }
+    } catch (error) {
+      console.error("Failed to undo call:", error);
       setError(true);
     } finally {
       setBusyId(null);

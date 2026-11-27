@@ -15,6 +15,7 @@ type Props = {
   leadCount: number;
   cardRef: Ref<HTMLDivElement>;
   showAll: boolean;
+  onCallLogged: () => Promise<void>;
 };
 
 export default function SelectedStateCard({
@@ -23,6 +24,7 @@ export default function SelectedStateCard({
   leadCount,
   cardRef,
   showAll,
+  onCallLogged,
 }: Props) {
   const normalizedCode = code.toUpperCase();
   const name = CODE_TO_NAME[normalizedCode] ?? normalizedCode;
@@ -182,6 +184,7 @@ export default function SelectedStateCard({
             key={normalizedCode}
             state={normalizedCode}
             count={leadCount}
+            onCallLogged={onCallLogged}
           />
         </>
       ) : (

@@ -15,9 +15,10 @@ type Props = {
   data?: Record<string, StateInfo> | null;
   hourLabel?: string;
   leadsByState?: Record<string, number>;
+  onCallLogged: () => Promise<void>;
 };
 
-export default function MapPanel({ data, leadsByState }: Props) {
+export default function MapPanel({ data, leadsByState, onCallLogged }: Props) {
   const safe = useMemo(() => data ?? {}, [data]);
   const leads = leadsByState ?? {};
 
@@ -122,6 +123,7 @@ export default function MapPanel({ data, leadsByState }: Props) {
           leadCount={leads[pinned] ?? 0}
           cardRef={detailsRef}
           showAll={showAll}
+          onCallLogged={onCallLogged}
         />
       )}
     </section>
