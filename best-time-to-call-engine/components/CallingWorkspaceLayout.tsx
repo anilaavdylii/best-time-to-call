@@ -13,9 +13,9 @@ import {
   shiftHours,
   type ShiftSettings,
 } from "@/lib/schedule";
-
 import { loadBaselineRates } from "@/lib/loadBaselineRates";
 import { useStoredState } from "@/lib/useStoredState";
+import { SchedulePanel } from "./schedule/SchedulePanel";
 
 type Props = {
   leadsByState: Record<string, number>;
@@ -115,7 +115,6 @@ const CallingWorkspaceLayout = ({ leadsByState }: Props) => {
             12-hour schedule
           </button>
         </div>
-
         {activeTab === "map" && (
           <>
             <ShiftTimeline
@@ -131,16 +130,18 @@ const CallingWorkspaceLayout = ({ leadsByState }: Props) => {
             />
           </>
         )}
-
-        {activeTab === "schedule" && (
-          <div className="rounded-xl border border-slate-200 bg-white p-6">
-            <h2 className="text-base font-semibold text-slate-900">
-              12-hour dialing schedule
-            </h2>
-            <p className="mt-2 text-sm text-slate-500">
-              Your hourly dialing schedule will appear here.
-            </p>
-          </div>
+        {activeTab === "schedule" && today && (
+          <SchedulePanel
+            hours={hours}
+            prefs={prefs}
+            today={today}
+            baselineRates={baselineRates}
+            leadsByState={leadsByState}
+            onSelectHour={(selectedHour) => {
+              setHour(selectedHour);
+              setActiveTab("map");
+            }}
+          />
         )}
       </div>
 
