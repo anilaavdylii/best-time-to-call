@@ -21,7 +21,6 @@ const KINDS: CallKind[] = [
   "failed",
 ];
 
-// The hour (0-23) it is right now in a time zone.
 function localHourNow(timeZone: string) {
   const hour = new Intl.DateTimeFormat("en-US", {
     timeZone,
@@ -41,7 +40,6 @@ export async function getLeadsForState(state: string): Promise<LeadRow[]> {
   return listLeadsForState(workspaceId, state);
 }
 
-// Gets this workspace's call history for the prediction model.
 export async function getCallStatsForPrediction(): Promise<CallStatsByStateHour> {
   const workspaceId = await getWorkspaceId();
 

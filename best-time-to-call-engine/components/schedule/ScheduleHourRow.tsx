@@ -95,7 +95,7 @@ export function ScheduleHourRow({
               </div>
 
               <p className="mt-0.5 truncate text-xs text-slate-500">
-                {topGroup.localTime} local · {topGroup.leads.toLocaleString()}{" "}
+                {topGroup.localTime} local · {topGroup.leads.toLocaleString()}
                 {topGroup.leads === 1 ? "lead" : "leads"}
                 {topGroup.rate !== null
                   ? ` · ${formatConnects(topGroup.leads, topGroup.expectedConnects)}`
@@ -202,7 +202,7 @@ export function ScheduleHourRow({
                         {zoneGroup.zone}
                       </p>
                       <p className="text-xs text-slate-500">
-                        {zoneGroup.localTime} local · {zoneGroup.states.length}{" "}
+                        {zoneGroup.localTime} local · {zoneGroup.states.length}
                         open states
                       </p>
                     </div>

@@ -1,9 +1,5 @@
-// Types shared by the database code, the server actions and the UI.
-
-// What can happen on a call. These match the check on call_attempts.outcome.
 export type Outcome = "answered" | "no_answer" | "busy" | "failed";
 
-// What a rep can click. "positive" means answered AND it went well.
 export type CallKind = Outcome | "positive";
 
 export type OutcomeCounts = Record<Outcome, number>;

@@ -16,7 +16,7 @@ export default function Home() {
         <Header />
         <Suspense fallback={<p className="text-sm text-slate-500">Loading…</p>}>
           <Workspace />
-        </Suspense>{" "}
+        </Suspense>
       </div>
     </main>
   );
