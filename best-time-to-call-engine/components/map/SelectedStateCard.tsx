@@ -10,10 +10,11 @@ const CODE_TO_NAME: Record<string, string> = Object.fromEntries(
 );
 
 type Props = {
-  code: string; // "CA"
-  info?: StateInfo; // schedule info for this state at the selected hour
+  code: string;
+  info?: StateInfo;
   leadCount: number;
   cardRef: Ref<HTMLDivElement>;
+  showAll: boolean;
 };
 
 export default function SelectedStateCard({
@@ -21,6 +22,7 @@ export default function SelectedStateCard({
   info,
   leadCount,
   cardRef,
+  showAll,
 }: Props) {
   const normalizedCode = code.toUpperCase();
   const name = CODE_TO_NAME[normalizedCode] ?? normalizedCode;
@@ -30,6 +32,32 @@ export default function SelectedStateCard({
     : info.eligible
       ? `No leads in ${name} yet. This state is available for calling at the selected hour. Import numbers to get started.`
       : `No leads in ${name} yet. This state is not available for calling at the selected hour. Import numbers to get started.`;
+
+  type PriorityLabel =
+    | "Not callable or no leads"
+    | "No estimate available"
+    | "Lower chance"
+    | "Good chance"
+    | "Best chance";
+
+  const priorityLabel: PriorityLabel =
+    !info?.eligible || (!showAll && leadCount === 0)
+      ? "Not callable or no leads"
+      : !info.predictionAvailable
+        ? "No estimate available"
+        : info.score >= 0.27
+          ? "Best chance"
+          : info.score >= 0.24
+            ? "Good chance"
+            : "Lower chance";
+
+  const priorityStyles: Record<PriorityLabel, string> = {
+    "Not callable or no leads": "border-slate-200 bg-slate-100 text-slate-700",
+    "No estimate available": "border-amber-200 bg-amber-50 text-amber-800",
+    "Lower chance": "border-green-200 bg-green-50 text-green-800",
+    "Good chance": "border-green-300 bg-green-100 text-green-900",
+    "Best chance": "border-green-700 bg-green-700 text-white",
+  };
 
   return (
     <section
@@ -97,38 +125,51 @@ export default function SelectedStateCard({
         </p>
       )}
 
-      {info?.eligible && info.predictionAvailable && (
-        <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50/70 p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-medium text-blue-700">
-                Chance someone answers
-              </p>
-              <p className="mt-1 text-xs text-slate-600">
-                When it's {info.localTime} in this state
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <span className="text-xs font-medium text-slate-500">
+          Calling priority
+        </span>
+
+        <span
+          className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${priorityStyles[priorityLabel]}`}
+        >
+          {priorityLabel}
+        </span>
+      </div>
+      {info?.eligible &&
+        info.predictionAvailable &&
+        (showAll || leadCount > 0) && (
+          <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-medium text-emerald-700">
+                  Chance someone answers
+                </p>
+                <p className="mt-1 text-xs text-slate-600">
+                  When it's {info.localTime} in this state
+                </p>
+              </div>
+
+              <p className="text-2xl font-bold tabular-nums text-emerald-800">
+                {(info.score * 100).toFixed(1)}%
               </p>
             </div>
-
-            <p className="text-2xl font-bold tabular-nums text-blue-800">
-              {(info.score * 100).toFixed(1)}%
+            <p className="mt-2 text-xs text-slate-600">
+              Based on past calls across the US. Results in this state may be
+              different.
             </p>
           </div>
+        )}
 
-          <p className="mt-2 text-xs text-slate-600">
-            Based on past calls across the US. Results in this state may be
-            different.
-          </p>
-        </div>
-      )}
-
-      {/* No benchmark available */}
-      {info?.eligible && !info.predictionAvailable && (
-        <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
-          <p className="text-xs text-amber-800">
-            No benchmark prediction is available for this local hour.
-          </p>
-        </div>
-      )}
+      {info?.eligible &&
+        !info.predictionAvailable &&
+        (showAll || leadCount > 0) && (
+          <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <p className="text-xs text-amber-800">
+              No estimate is available for this local time.
+            </p>
+          </div>
+        )}
 
       {leadCount > 0 ? (
         <>

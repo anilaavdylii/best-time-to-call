@@ -116,10 +116,12 @@ export default function MapPanel({ data, leadsByState }: Props) {
 
       {pinned && (
         <SelectedStateCard
+          key={pinned}
           code={pinned}
           info={safe[pinned]}
           leadCount={leads[pinned] ?? 0}
           cardRef={detailsRef}
+          showAll={showAll}
         />
       )}
     </section>
