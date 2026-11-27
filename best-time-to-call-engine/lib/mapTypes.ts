@@ -5,4 +5,5 @@ export type StateInfo = {
   localTime: string;
   teamTime: string;
   eligible: boolean;
+  predictionAvailable?: boolean;
 };

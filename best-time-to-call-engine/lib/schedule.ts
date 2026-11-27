@@ -26,22 +26,6 @@ export const STATE_TZ: Record<string, string> = Object.fromEntries(
   ),
 );
 
-export const CONTACT_RATE_BY_HOUR: Record<number, number> = {
-  8: 0.35,
-  9: 0.5,
-  10: 0.6,
-  11: 0.55,
-  12: 0.45,
-  13: 0.5,
-  14: 0.55,
-  15: 0.6,
-  16: 0.7,
-  17: 0.85,
-  18: 0.95,
-  19: 0.8,
-  20: 0.5,
-};
-
 function partsIn(timezone: string, date: Date) {
   const f = new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
@@ -96,8 +80,9 @@ export function hourLabel(teamHour: number) {
 
 export function buildData(
   prefs: ShiftSettings,
-  teamHour: number, // 0..23 on the team clock
-  base: Date, // "today"; passed in so this stays a pure function
+  teamHour: number,
+  base: Date,
+  baselineRates: Record<number, number> = {},
 ): Record<string, StateInfo> {
   const onShift = shiftHours(prefs).includes(teamHour);
   const instant = instantForTeamHour(teamHour, prefs.timezone, base);
@@ -105,14 +90,23 @@ export function buildData(
 
   for (const [code, timezone] of Object.entries(STATE_TZ)) {
     const localHour = partsIn(timezone, instant).h;
+
     const inWindow = localHour >= WINDOW_START && localHour < WINDOW_END;
+
+    const eligible = onShift && inWindow;
+
+    // Get the rate from the CSV data loaded by the application.
+    const baselineRate = eligible ? baselineRates[localHour] : undefined;
+
     out[code] = {
-      eligible: onShift && inWindow,
-      score: onShift && inWindow ? (CONTACT_RATE_BY_HOUR[localHour] ?? 0) : 0,
+      eligible,
+      score: baselineRate ?? 0,
+      predictionAvailable: baselineRate !== undefined,
       zone: ZONE_LABEL[timezone] ?? timezone,
       localTime: fmtHour(localHour),
       teamTime: fmtHour(teamHour),
     };
   }
+
   return out;
 }

@@ -97,6 +97,39 @@ export default function SelectedStateCard({
         </p>
       )}
 
+      {info?.eligible && info.predictionAvailable && (
+        <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50/70 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-medium text-blue-700">
+                Chance someone answers
+              </p>
+              <p className="mt-1 text-xs text-slate-600">
+                When it's {info.localTime} in this state
+              </p>
+            </div>
+
+            <p className="text-2xl font-bold tabular-nums text-blue-800">
+              {(info.score * 100).toFixed(1)}%
+            </p>
+          </div>
+
+          <p className="mt-2 text-xs text-slate-600">
+            Based on past calls across the US. Results in this state may be
+            different.
+          </p>
+        </div>
+      )}
+
+      {/* No benchmark available */}
+      {info?.eligible && !info.predictionAvailable && (
+        <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+          <p className="text-xs text-amber-800">
+            No benchmark prediction is available for this local hour.
+          </p>
+        </div>
+      )}
+
       {leadCount > 0 ? (
         <>
           {info && !info.eligible && (
