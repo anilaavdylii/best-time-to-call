@@ -6,8 +6,21 @@ import { NAME_TO_CODE } from "@/lib/stateMapping";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 
-const AVAILABLE_COLOR = "#15966b";
-const UNAVAILABLE_COLOR = "#e5e7eb";
+// Different colors for availability and calling priority.
+export type StatePriority =
+  | "unavailable"
+  | "no-data"
+  | "low"
+  | "medium"
+  | "high";
+
+export const PRIORITY_COLORS: Record<StatePriority, string> = {
+  unavailable: "#E5E7EB", // Gray
+  "no-data": "#FEF3C7", // Soft yellow
+  low: "#DCFCE7", // Light green
+  medium: "#86EFAC", // Medium green
+  high: "#15803D", // Dark green
+};
 
 const GEO_STYLE = {
   default: { outline: "none", transition: "fill 150ms ease" },
@@ -20,25 +33,24 @@ const GEO_STYLE = {
   pressed: { outline: "none" },
 } as unknown as CSSProperties;
 
-// react-simple-maps types `path` as a plain function, but it is a d3 path
-// generator at runtime, and d3 path generators have .centroid().
 type PathWithCentroid = {
   centroid: (feature: unknown) => [number, number];
 };
 
 type Props = {
-  leads: Record<string, number>; // leads per state
-  isFilled: (code: string) => boolean; // should this state be green?
-  active: string | null; // hovered or pinned state (gets an outline)
+  leads: Record<string, number>;
+  isFilled: (code: string) => boolean;
+  getPriority: (code: string) => StatePriority;
+  active: string | null;
   pinned: string | null;
   onHover: (code: string | null) => void;
-  onSelect: (code: string) => void; // a state was clicked
+  onSelect: (code: string) => void;
 };
 
-// Draws the US map: the states, then their labels on top.
 export default function StateMap({
   leads,
   isFilled,
+  getPriority,
   active,
   pinned,
   onHover,
@@ -54,18 +66,23 @@ export default function StateMap({
       <Geographies geography={GEO_URL}>
         {({ geographies, path }) => (
           <>
-            {/* 1. The states */}
+            {/* 1. Draw the states */}
             {geographies.map((geo) => {
               const code = NAME_TO_CODE[geo.properties?.name];
               if (!code) return null;
 
               const outlined = active === code || pinned === code;
 
+              // States without leads are not filled unless included.
+              const filled = isFilled(code);
+
+              const priority = filled ? getPriority(code) : "unavailable";
+
               return (
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill={isFilled(code) ? AVAILABLE_COLOR : UNAVAILABLE_COLOR}
+                  fill={PRIORITY_COLORS[priority]}
                   stroke={outlined ? "#111827" : "#ffffff"}
                   strokeWidth={outlined ? 2 : 0.9}
                   onMouseEnter={() => onHover(code)}
@@ -76,7 +93,7 @@ export default function StateMap({
               );
             })}
 
-            {/* 2. The labels, drawn after the states so they sit on top */}
+            {/* 2. Draw state labels */}
             {geographies.map((geo) => {
               const code = NAME_TO_CODE[geo.properties?.name];
               if (!code) return null;
@@ -84,17 +101,23 @@ export default function StateMap({
               const [x, y] = (path as unknown as PathWithCentroid).centroid(
                 geo,
               );
+
               if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
 
               const filled = isFilled(code);
+              const priority = filled ? getPriority(code) : "unavailable";
+
               const n = leads[code] ?? 0;
               const showLeads = filled && n > 0;
+
+              // Dark text on light states, white text on dark green.
+              const labelColor = priority === "high" ? "#ffffff" : "#334155";
 
               return (
                 <g
                   key={`label-${geo.rsmKey}`}
                   textAnchor="middle"
-                  fill={filled ? "#ffffff" : "#475569"}
+                  fill={filled ? labelColor : "#475569"}
                   style={{ pointerEvents: "none" }}
                 >
                   <text
@@ -106,6 +129,7 @@ export default function StateMap({
                   >
                     {code}
                   </text>
+
                   {showLeads && (
                     <text x={x} y={y + 9} dy="0.35em" fontSize={9}>
                       {n}

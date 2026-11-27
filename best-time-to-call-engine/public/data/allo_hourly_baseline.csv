@@ -1,0 +1,14 @@
+local_hour_24,local_hour_label,connect_rate_pct,connect_rate_decimal,time_basis,source_url,notes
+7,7 AM,19.7,0.197,prospect_local_time,https://www.withallo.com/blog/cold-calling-statistics,Aggregate benchmark; not state-specific. Prospect local time was estimated from phone area code.
+8,8 AM,22.7,0.227,prospect_local_time,https://www.withallo.com/blog/cold-calling-statistics,Aggregate benchmark; not state-specific. Prospect local time was estimated from phone area code.
+9,9 AM,22.1,0.221,prospect_local_time,https://www.withallo.com/blog/cold-calling-statistics,Aggregate benchmark; not state-specific. Prospect local time was estimated from phone area code.
+10,10 AM,24.4,0.244,prospect_local_time,https://www.withallo.com/blog/cold-calling-statistics,Aggregate benchmark; not state-specific. Prospect local time was estimated from phone area code.
+11,11 AM,27.5,0.275,prospect_local_time,https://www.withallo.com/blog/cold-calling-statistics,Aggregate benchmark; not state-specific. Prospect local time was estimated from phone area code.
+12,12 PM,27.2,0.272,prospect_local_time,https://www.withallo.com/blog/cold-calling-statistics,Aggregate benchmark; not state-specific. Prospect local time was estimated from phone area code.
+13,1 PM,27.6,0.276,prospect_local_time,https://www.withallo.com/blog/cold-calling-statistics,Aggregate benchmark; not state-specific. Prospect local time was estimated from phone area code.
+14,2 PM,27.8,0.278,prospect_local_time,https://www.withallo.com/blog/cold-calling-statistics,Aggregate benchmark; not state-specific. Prospect local time was estimated from phone area code.
+15,3 PM,27.8,0.278,prospect_local_time,https://www.withallo.com/blog/cold-calling-statistics,Aggregate benchmark; not state-specific. Prospect local time was estimated from phone area code.
+16,4 PM,27.1,0.271,prospect_local_time,https://www.withallo.com/blog/cold-calling-statistics,Aggregate benchmark; not state-specific. Prospect local time was estimated from phone area code.
+17,5 PM,23.4,0.234,prospect_local_time,https://www.withallo.com/blog/cold-calling-statistics,Aggregate benchmark; not state-specific. Prospect local time was estimated from phone area code.
+18,6 PM,21.6,0.216,prospect_local_time,https://www.withallo.com/blog/cold-calling-statistics,Aggregate benchmark; not state-specific. Prospect local time was estimated from phone area code.
+19,7 PM,21.8,0.218,prospect_local_time,https://www.withallo.com/blog/cold-calling-statistics,Aggregate benchmark; not state-specific. Prospect local time was estimated from phone area code.
