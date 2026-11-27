@@ -38,27 +38,16 @@ const CallingWorkspaceLayout = ({ leadsByState }: Props) => {
   );
   const [callStats, setCallStats] = useState<CallStatsByStateHour>({});
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadCallStats() {
-      try {
-        const stats = await getCallStatsForPrediction();
-
-        if (!cancelled) {
-          setCallStats(stats);
-          console.log("CALL HISTORY:", stats);
-        }
-      } catch (error) {
-        console.error("CALL HISTORY ERROR:", error);
-      }
+  async function refreshCallStats() {
+    try {
+      const stats = await getCallStatsForPrediction();
+      setCallStats(stats);
+    } catch (error) {
+      console.error("CALL HISTORY ERROR:", error);
     }
-
-    loadCallStats();
-
-    return () => {
-      cancelled = true;
-    };
+  }
+  useEffect(() => {
+    refreshCallStats();
   }, []);
 
   useEffect(() => {
@@ -155,6 +144,7 @@ const CallingWorkspaceLayout = ({ leadsByState }: Props) => {
               data={data}
               hourLabel={hourLabel(activeHour)}
               leadsByState={leadsByState}
+              onCallLogged={refreshCallStats}
             />
           </>
         )}

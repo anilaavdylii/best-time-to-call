@@ -68,7 +68,7 @@ export function useDialSchedule(
       let availableStateCount = 0;
       let totalLeads = 0;
 
-      for (const [code, info] of Object.entries(stateData)) {
+      for (const [code, info] of Object?.entries(stateData)) {
         if (!info.eligible) continue;
         availableStateCount += 1;
 
