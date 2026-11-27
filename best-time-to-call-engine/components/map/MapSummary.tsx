@@ -27,7 +27,7 @@ export default function MapSummary({
       color: "text-slate-600",
     },
     {
-      value: hasLeads ? `${callableLeads} of ${totalLeads}` : "—",
+      value: hasLeads ? `${callableLeads} of ${totalLeads}` : "-",
       label: hasLeads ? "Available to call" : "No leads",
       color: "text-indigo-700",
     },
