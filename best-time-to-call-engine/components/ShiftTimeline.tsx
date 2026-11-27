@@ -13,10 +13,10 @@ export default function ShiftTimeline({ hours, activeHour, onSelect }: Props) {
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="mb-4">
         <h3 className="text-sm font-semibold text-slate-900">
-          Calling opportunities throughout the shift
+          Calling opportunities across the shift
         </h3>
         <p className="mt-1 text-xs text-slate-500">
-          Select an hour to explore available states on the map.
+          Pick an hour to explore open states on the map.
         </p>
       </div>
 
@@ -46,7 +46,7 @@ export default function ShiftTimeline({ hours, activeHour, onSelect }: Props) {
                   selected ? "text-emerald-100" : "text-slate-400"
                 }`}
               >
-                {selected ? "Selected" : "View map"}
+                {selected ? "Selected" : "Explore"}
               </span>
             </button>
           );

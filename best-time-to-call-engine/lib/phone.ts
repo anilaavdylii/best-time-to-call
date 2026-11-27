@@ -21,15 +21,8 @@ export type ImportResult = {
 
 const MAX_LINES = 2000;
 
-// US/Canada numbers look like NXX NXX XXXX, where N is a digit from 2 to 9.
 const NANP = /^[2-9]\d{2}[2-9]\d{6}$/;
 
-/**
- * Turns the pasted text into clean numbers.
- * One number per line, with an optional state after a comma:
- *   +1 415-555-0101
- *   (212) 555-0142, NY
- */
 export function parsePhoneLines(text: string) {
   const valid: ParsedNumber[] = [];
   const invalid: ParseError[] = [];

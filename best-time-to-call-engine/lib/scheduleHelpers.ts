@@ -75,7 +75,6 @@ export function useDialSchedule(
         const leadCount = leadsByState[code] ?? 0;
         const stateRate = info.predictionAvailable ? info.score : null;
 
-        // 1. Track all open states grouped by time zone
         let openGroup = openZoneGroups.get(info.zone);
         if (!openGroup) {
           openGroup = {
@@ -94,7 +93,6 @@ export function useDialSchedule(
           openGroup.rate = stateRate;
         }
 
-        // 2. Track states that actually have leads
         if (leadCount <= 0) continue;
         totalLeads += leadCount;
 

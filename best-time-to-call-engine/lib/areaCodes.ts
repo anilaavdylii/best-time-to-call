@@ -1,15 +1,3 @@
-// Area code -> US state (50 states + DC).
-//
-// Source: the North American Numbering Plan Administrator's list, as packaged
-// by the MIT-licensed "areacodes" npm package (v0.2.1). Generated once and
-// copied here, so there is no extra dependency.
-//
-// Limits, worth saying in the write-up:
-// - An area code is only an ESTIMATE of where someone is. People keep their
-//   number when they move, and mobile numbers travel.
-// - A few very recent area codes are missing. A number with an unknown area
-//   code can still be imported if the user adds the state: "+1 840-555-0101, CA".
-// - Puerto Rico and other territories are not included (they are not on the map).
 export const AREA_CODE_STATE: Record<string, string> = {
   201: "NJ",
   202: "DC",
@@ -350,7 +338,6 @@ export const AREA_CODE_STATE: Record<string, string> = {
   989: "MI",
 };
 
-// Toll-free codes. These numbers have no location, so they cannot be scheduled.
 export const TOLL_FREE = new Set([
   "800",
   "822",
@@ -371,7 +358,6 @@ export const TOLL_FREE = new Set([
   "889",
 ]);
 
-// Every state code that appears above (used to validate a manual ", CA").
 export const VALID_STATES = new Set(Object.values(AREA_CODE_STATE));
 
 export function stateForAreaCode(areaCode: string): string | null {

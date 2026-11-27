@@ -29,7 +29,7 @@ export default function LeadsSwitch({ checked, disabled, onToggle }: Props) {
             }`}
           />
         </span>
-        Include states without leads
+        Include states with no leads{" "}
       </button>
     </div>
   );

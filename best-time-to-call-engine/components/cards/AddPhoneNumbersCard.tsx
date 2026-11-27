@@ -130,7 +130,7 @@ export default function AddPhoneNumbers() {
 
             <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
               <p className="text-xs leading-relaxed text-slate-500">
-                One US number per line. Override a state after a comma:{" "}
+                One US number per line. Override a state after a comma:
                 <code className="rounded bg-slate-200/70 px-1.5 py-0.5 font-mono text-[11px] text-slate-700">
                   +1 415-555-0101, CA
                 </code>
@@ -178,8 +178,8 @@ export default function AddPhoneNumbers() {
                     }`}
                   >
                     <span>
-                      Imported{" "}
-                      <strong className="font-semibold">{result.added}</strong>{" "}
+                      Imported
+                      <strong className="font-semibold">{result.added}</strong>
                       number{result.added === 1 ? "" : "s"}
                     </span>
                     {result.alreadySaved > 0 && (

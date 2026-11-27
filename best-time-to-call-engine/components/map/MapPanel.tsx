@@ -84,7 +84,7 @@ export default function MapPanel({ data, leadsByState }: Props) {
             />
           </div>
           <p className="text-xs text-slate-500">
-            States available to call during the selected shift hour.
+            Available states for the selected hour.{" "}
           </p>
         </div>
 
